@@ -38,11 +38,20 @@ class Maintenance_Command extends \WP_CLI_Command
      *      wp maintenance is_enabled
      */
     function is_enabled($args, $assoc_args){
-        if (is_readable(ABSPATH . '.maintenance')){
-            WP_CLI::success('Site is in maintenance mode.');
-        }else{
-            WP_CLI::error('Site is not in maintenance.');
+        $filePath = $this->maintenance_filePath . $this->maintenance_file;
+
+        if (is_readable($filePath)) {
+            include_once($filePath);
+            // Measure it by removing 2 second from the actual WP value to avoid confusion in the response.
+            if ((time() - $upgrading) <= 598 ){
+                WP_CLI::success('Site is in maintenance mode.');
+            }else{
+                WP_CLI::warning("Site is not in maintenance mode but, there is a $this->maintenance_file file in:  $this->maintenance_filePath");
+                return;
+            }
         }
+
+        WP_CLI::error('Site is not in maintenance.');
     }
 
     /**
