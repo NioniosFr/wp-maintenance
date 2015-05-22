@@ -3,8 +3,11 @@
 // Cygwin Usage: wp require=`cygpath -wa ./src/wp_maintenance.php`
 
 if ( defined('WP_CLI') && WP_CLI ) {
-    require_once dirname(__DIR__). DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'autoload.php';
-    define(CURLOPT_SSL_VERIFYPEER, false);
+    $autoload = dirname(__DIR__). DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'autoload.php';
+    if (file_exists($autoload)){
+        require_once $autoload;
+    }
+    // define(CURLOPT_SSL_VERIFYPEER, false);
 }else{
     exit(1);
 }
@@ -18,7 +21,7 @@ if ( defined('WP_CLI') && WP_CLI ) {
  * @version 1.0
  * @author qfry
  */
-class Maintenance_Command extends WP_CLI_Command
+class Maintenance_Command extends \WP_CLI_Command
 {
     protected $maintenance_filePath = ABSPATH;
     protected $maintenance_file = '.maintenance';
@@ -34,7 +37,7 @@ class Maintenance_Command extends WP_CLI_Command
      * ## EXAMPLES
      *      wp maintenance is_enabled
      */
-    function is_enabled(){
+    function is_enabled($args, $assoc_args){
         if (is_readable(ABSPATH . '.maintenance')){
             WP_CLI::success('Site is in maintenance mode.');
         }else{
@@ -47,7 +50,7 @@ class Maintenance_Command extends WP_CLI_Command
      * 
      * ## OPTIONS
      *  [time]
-     *  : The interval in which the site should remain in maintenance.
+     *  : The interval in which the site should remain in maintenance defined in second minutes or hours.: <number><s|m|h>
      *  
      *  [page]
      *  : An HTML page to use as the maintenance page.
@@ -57,13 +60,66 @@ class Maintenance_Command extends WP_CLI_Command
      *  wp maintenance enable --time=10m
      *  wp maintenance enable --time=1h --page=/tmp/my-cool-html-file.html
      *  
-     * @synopsis [--time=<time>] [--page=<path-to-html-file>]
+     * @synopsis [--time=<interval>] [--page=<path-to-a-maintenance-file>]
      */
-    function enable(){
+    function enable($args, $assoc_args){
         $file = $this->maintenance_filePath . $this->maintenance_file;
-        $contents = '<?php $$upgrading = time(); ?>';
-        
-        file_put_contents($file, $contents);
+
+        if(!empty($assoc_args['time'])){
+            $time = $this->user_time_in_posix($assoc_args['time']);
+        }
+
+        // WordPress checks time to be less than 10 minutes "time() - time() == 0".
+        $contents = empty($time) ? '<?php $upgrading = time(); ?>' : "<?php /* Time: ${assoc_args['time']} */ \$upgrading = $time; ?>";
+        @file_put_contents($file, $contents);
+
+        if(!empty($assoc_args['page'])){
+            if(file_exists($assoc_args['page'])){
+                @copy($assoc_args['page'], $this->maintenance_pagePath.$this->maintenance_page);
+            }else{
+                WP_CLI::error(escapeshellarg($assoc_args['page']) .' is not a valid filepath.');
+            }
+        }
+        if (file_exists($file)){
+            WP_CLI::success('Maintenance mode has been enabled.');
+        }else{
+            WP_CLI::error('Maintenance could not be enabled.');
+        }
+    }
+
+    /**
+     * Internal function to determine the interval of time based on
+     * a specific string format.
+     *
+     * @param mixed $time
+     * @return array|double|int
+     */
+    protected function user_time_in_posix($time)
+    {
+        preg_match('/^([0-9]{1,4})(s|m|h){1}$/i', $time, $interval);
+        $span = empty($interval[2]) ? 'default' : $interval[2];
+        $time = null;
+
+        switch($span){
+            case 's':
+            case 'S':
+                $time = time() + ($interval[1]);
+                break;
+            case 'm':
+            case 'M':
+                $time = time() + ($interval[1] * 60);
+                break;
+            case 'h':
+            case 'H':
+                $time = time() + ($interval[1] * 60 )*60;
+                break;
+            default:
+                $time = time();
+                break;
+        }
+
+        $time -= 600;
+        return $time;
     }
 
     /**
@@ -74,7 +130,7 @@ class Maintenance_Command extends WP_CLI_Command
      * ## EXAMPLES
      *  wp maintenance
      */
-    function disable(){
+    function disable($args, $assoc_args){
         $filePath = $this->maintenance_filePath . $this->maintenance_file;
         if(file_exists($filePath)){
             @unlink($filePath);
