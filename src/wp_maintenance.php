@@ -108,27 +108,29 @@ class Maintenance_Command extends \WP_CLI_Command
     {
         preg_match('/^([0-9]{1,4})(s|m|h){1}$/i', $time, $interval);
         $span = empty($interval[2]) ? 'default' : $interval[2];
-        $time = null;
+
+        // Assign starting time based on the WordPress check (10m+ gets invalidated) and a tiny lag of this script.
+        $time = (time() - 599);
 
         switch($span){
             case 's':
             case 'S':
-                $time = time() + ($interval[1]);
+                $time += $interval[1];
                 break;
             case 'm':
             case 'M':
-                $time = time() + ($interval[1] * 60);
+                $time += ( $interval[1] * 60 );
                 break;
             case 'h':
             case 'H':
-                $time = time() + ($interval[1] * 60 )*60;
+                $time += ( ($interval[1] * 60 ) * 60 );
                 break;
             default:
+                // Give the default interval if time was not in the correct format.
                 $time = time();
                 break;
         }
 
-        $time -= 600;
         return $time;
     }
 
@@ -144,9 +146,16 @@ class Maintenance_Command extends \WP_CLI_Command
         $filePath = $this->maintenance_filePath . $this->maintenance_file;
         if(file_exists($filePath)){
             @unlink($filePath);
+            if(file_exists($this->maintenance_pagePath . $this->maintenance_page)){
+                if(@unlink($this->maintenance_pagePath . $this->maintenance_page)){
+                    WP_CLI::line("The maintenance page: $this->maintenance_page has been removed from $this->maintenance_pagePath .");
+                }else{
+                    WP_CLI::warning('Unable to delete: '. $this->maintenance_pagePath . $this->maintenance_page);
+                }
+            }
             WP_CLI::success('Maintenance mode has been disabled.');
         }else{
-            WP_CLI::warning('Maintenance mode is not enabled.');
+            WP_CLI::line('Maintenance mode is not enabled. Nothing to do here..');
         }
     }
 
