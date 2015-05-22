@@ -83,12 +83,13 @@ class Maintenance_Command extends \WP_CLI_Command
         @file_put_contents($file, $contents);
 
         if(!empty($assoc_args['page'])){
-            if(file_exists($assoc_args['page'])){
-                @copy($assoc_args['page'], $this->maintenance_pagePath.$this->maintenance_page);
+            if(file_exists($assoc_args['page']) && @copy($assoc_args['page'], $this->maintenance_pagePath.$this->maintenance_page)){
+                WP_CLI::line('Copied maintenance page in: '.$this->maintenance_pagePath.$this->maintenance_page);
             }else{
                 WP_CLI::error(escapeshellarg($assoc_args['page']) .' is not a valid filepath.');
             }
         }
+
         if (file_exists($file)){
             WP_CLI::success('Maintenance mode has been enabled.');
         }else{
