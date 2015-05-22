@@ -1,0 +1,17 @@
+{
+    "name": "nioniosfr/wp-maintenance",
+    "description": "A wp-cli command to put WordPress sites in maintenance mode",
+    "keywords": [ "cli", "wordpress", "maintenance" ],
+    "homepage": "http://projects.dfryg.tk/wp_maintenance",
+    "license": "MIT",
+    "require-dev":{
+        "wp-cli/wp-cli": "~0.19.1"
+    },
+    "require": {
+    },
+    "autoload": {
+        "psr-4": {
+            "NioniosFr\\WP_Maintenance\\": [ "src" ]
+        }
+    }
+}

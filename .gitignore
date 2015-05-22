@@ -1,0 +1,15 @@
+# Composer non trivial files
+/vendor
+/composer.lock
+
+# Exclude VisualStudio project-solution files
+/*.phpproj*
+/*.sln*
+/*.suo*
+
+# Vagrant directory
+/.vagrant
+
+# Other common project fodlers
+/dist
+/wp
