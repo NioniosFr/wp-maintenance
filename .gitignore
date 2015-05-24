@@ -1,15 +1,24 @@
 # Composer non trivial files
 /vendor
-/composer.lock
+#/composer.lock
 
-# Exclude VisualStudio project-solution files
+# Exclude IDE files
+## Visual Studio
 /*.phpproj*
 /*.sln*
 /*.suo*
 
+## Eclipse
+/.project
+/.buildpath
+
+## Sublime
+/*.sublime-workspace
+/*.sublime-project
+
 # Vagrant directory
 /.vagrant
 
-# Other common project fodlers
+# Others
 /dist
 /wp
