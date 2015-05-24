@@ -5,9 +5,15 @@
     "homepage": "https://github.com/NioniosFr/wp-maintenance/wiki",
     "license": "MIT",
     "require-dev":{
+        "composer/installers" : "~1.0",
+        "johnpbloch/wordpress": "~4.2.2",
         "wp-cli/wp-cli": "~0.19.1"
     },
     "require": {
+        "php": ">=5.3.3"
+    },
+    "extra": {
+        "wordpress-install-dir": "wp"
     },
     "autoload": {
         "psr-4": {
