@@ -1,41 +1,33 @@
 <?php
 namespace NioniosFr\WP_Maintenace;
-use NioniosFr\WP_Maintenace\Maintenance as Maintenance;
-if (defined('\WP_CLI') &&\WP_CLI) {
-    $autoload = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'vendor' .
-             DIRECTORY_SEPARATOR . 'autoload.phps';
-    if (file_exists($autoload)) {
-        require_once $autoload;
-    } else {
-        spl_autoload_register(
-            function  ($class)
-            {
-                // project-specific namespace prefix
-                $prefix = 'NioniosFr\\WP_Maintenace\\';
+use NioniosFr\WP_Maintenace\Maintenance;
+if (defined('WP_CLI') && WP_CLI) {
+    spl_autoload_register(
+        function  ($class)
+        {
+            // project-specific namespace prefix
+            $prefix = 'NioniosFr\\WP_Maintenace\\';
 
-                // base directory for the namespace prefix
-                $base_dir = __DIR__ . DIRECTORY_SEPARATOR;
+            // base directory for the namespace prefix
+            $base_dir = __DIR__ . DIRECTORY_SEPARATOR;
 
-                // does the class use the namespace prefix?
-                $len = strlen($prefix);
-                if (strncmp($prefix, $class, $len) !== 0) {
-                    // no, move to the next registered autoloader
-                    return;
-                }
+            // does the class use the namespace prefix?
+            $len = strlen($prefix);
+            if (strncmp($prefix, $class, $len) !== 0) {
+                // no, move to the next registered autoloader
+                return;
+            }
 
-                $relative_class = substr($class, $len);
+            $relative_class = substr($class, $len);
 
-                $filepath = $base_dir .
-                         str_replace('\\', DIRECTORY_SEPARATOR, $relative_class);
+            $filepath = $base_dir .
+                     str_replace('\\', DIRECTORY_SEPARATOR, $relative_class);
 
-                // if the file exists, require it
-                if (file_exists($filepath . '.php')) {
-                    require $filepath . '.php';
-                } elseif (file_exists($filepath . '.class.php')) {
-                    require $filepath . '.class.php';
-                }
-            });
-    }
+            // if the file exists, require it
+            if (file_exists($filepath . '.php')) {
+                require $filepath . '.php';
+            }
+        });
 } else {
     exit(1);
 }
@@ -57,6 +49,7 @@ class Maintenance_API_Command extends \WP_CLI_Command
      * @var NioniosFr\WP_Maintenace\Maintenance
      */
     protected $m;
+
     function __construct ()
     {
         parent::__construct();
