@@ -16,6 +16,7 @@
         "wordpress-install-dir": "wp"
     },
     "autoload": {
+        "files": ["src/wp-maintenance.php"],
         "psr-4": {
             "NioniosFr\\WP_Maintenance\\": [ "src" ]
         }
